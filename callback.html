@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kurani Finance Assistant: Connection</title>
+<style>
+  :root { --navy:#0b2545; --ink:#1a1a1a; --muted:#4a5568; --rule:#e2e8f0; --err:#9b2c2c; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--ink); background:#fff; line-height: 1.6; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 56px 24px 88px; }
+  header { padding-bottom: 20px; border-bottom: 1px solid var(--rule); margin-bottom: 28px; }
+  h1 { font-size: 1.5rem; font-weight: 600; margin: 0 0 4px; color: var(--navy); }
+  .sub { color: var(--muted); font-size: 0.95rem; margin: 0; }
+  h2 { font-size: 1.05rem; margin: 28px 0 8px; color: var(--navy); }
+  p { margin: 0 0 14px; }
+  .field { margin-bottom: 18px; }
+  .label { font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
+  .row { display: flex; gap: 8px; }
+  code { flex: 1; display: block; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 6px; background: #f7fafc; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.9rem; word-break: break-all; }
+  button { padding: 0 14px; border: 1px solid var(--navy); background: #fff; color: var(--navy); border-radius: 6px; font: inherit; font-size: 0.9rem; cursor: pointer; }
+  .err { color: var(--err); }
+  .hidden { display: none; }
+  nav { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 0.9rem; color: var(--muted); }
+  nav a { color: var(--navy); margin-right: 16px; text-underline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Kurani Finance Assistant</h1>
+  <p class="sub">QuickBooks connection callback</p>
+</header>
+
+<div id="ok" class="hidden">
+  <p>QuickBooks approved the connection. Copy the values below into the secure prompt in your assistant. The code works once and expires within minutes.</p>
+  <div class="field"><div class="label">Authorization code</div><div class="row"><code id="code"></code><button type="button" data-copy="code">Copy</button></div></div>
+  <div class="field"><div class="label">Company ID (realmId)</div><div class="row"><code id="realmId"></code><button type="button" data-copy="realmId">Copy</button></div></div>
+  <div class="field"><div class="label">State</div><div class="row"><code id="state"></code><button type="button" data-copy="state">Copy</button></div></div>
+  <p class="sub">Nothing on this page is sent or stored anywhere. Close the tab once you've copied the values.</p>
+</div>
+
+<div id="fail" class="hidden">
+  <h2 class="err">Connection not completed</h2>
+  <p id="errmsg"></p>
+</div>
+
+<div id="none" class="hidden">
+  <p>No authorization details found. This page is only used during QuickBooks sign-in.</p>
+</div>
+
+<nav><a href="index.html">Home</a><a href="eula.html">End-User License Agreement</a><a href="privacy.html">Privacy Policy</a></nav>
+</div>
+<script>
+(function () {
+  var q = new URLSearchParams(window.location.search);
+  var show = function (id) { document.getElementById(id).classList.remove('hidden'); };
+  if (q.get('error')) {
+    document.getElementById('errmsg').textContent = q.get('error') + (q.get('error_description') ? ': ' + q.get('error_description') : '');
+    show('fail');
+  } else if (q.get('code')) {
+    ['code', 'realmId', 'state'].forEach(function (k) { document.getElementById(k).textContent = q.get(k) || ''; });
+    show('ok');
+  } else {
+    show('none');
+  }
+  // Take the code out of the address bar and history once it's on screen.
+  if (window.location.search) { history.replaceState(null, '', window.location.pathname); }
+  document.querySelectorAll('button[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = document.getElementById(b.getAttribute('data-copy')).textContent;
+      navigator.clipboard.writeText(t).then(function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500); });
+    });
+  });
+})();
+</script>
+</body>
+</html>
